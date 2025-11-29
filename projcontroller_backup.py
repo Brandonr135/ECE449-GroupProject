@@ -12,7 +12,7 @@ import matplotlib as plt
 
 
 
-class ProjController(KesslerController):
+class ProjController2point0(KesslerController):
 
     def __init__(self):
         self.eval_frames = 0 
@@ -115,7 +115,7 @@ class ProjController(KesslerController):
 
         ship_thrust['LOW']  = fuzz.trimf(ship_thrust.universe, [-700, -10, -10])  
         ship_thrust['MED']  = fuzz.trimf(ship_thrust.universe, [0, 0, 400])       
-        ship_thrust['HIGH'] = fuzz.trimf(ship_thrust.universe, [200, 1000, 1000])       
+        ship_thrust['HIGH'] = fuzz.trimf(ship_thrust.universe, [200, 1000, 1000])     
 
 
         t_rule1 = ctrl.Rule(distance['FAR'],  ship_thrust['HIGH'])  
@@ -236,4 +236,4 @@ class ProjController(KesslerController):
 
     @property
     def name(self) -> str:
-        return "ProjController"
+        return "ProjController 2.0"

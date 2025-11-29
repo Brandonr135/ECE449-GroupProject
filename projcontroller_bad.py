@@ -12,7 +12,7 @@ import matplotlib as plt
 
 
 
-class ProjController(KesslerController):
+class ProjController2point0(KesslerController):
 
     def __init__(self):
         self.eval_frames = 0 
@@ -109,13 +109,25 @@ class ProjController(KesslerController):
 
 
         # TRUST CONTROL
-        distance['NEAR'] = fuzz.trimf(distance.universe, [0, 0, 250])
+        distance['NEAR'] = fuzz.trimf(distance.universe, [0, 0, 150])
         distance['MID']  = fuzz.trimf(distance.universe, [100, 600, 1000])
         distance['FAR']  = fuzz.smf(distance.universe, 200, 1500)
 
-        ship_thrust['LOW']  = fuzz.trimf(ship_thrust.universe, [-700, -10, -10])  
+        ship_distance = ctrl.Antecedent(np.arange(0, 2000, 10), 'ship_distance')
+        ship_avoid_turn = ctrl.Consequent(np.arange(-180, 180, 1), 'ship_avoid_turn')
+
+        ship_distance['DANGER'] = fuzz.trimf(ship_distance.universe, [0, 0, 300])
+        ship_distance['CAUTION'] = fuzz.trimf(ship_distance.universe, [200, 600, 1000])
+        ship_distance['CLEAR'] = fuzz.smf(ship_distance.universe, 800, 1500)
+
+        ship_avoid_turn['LEFT']  = fuzz.trimf(ship_avoid_turn.universe, [-180, -120, -60])
+        ship_avoid_turn['NONE']  = fuzz.trimf(ship_avoid_turn.universe, [-20, 0, 20])
+        ship_avoid_turn['RIGHT'] = fuzz.trimf(ship_avoid_turn.universe, [60, 120, 180])
+
+
+        ship_thrust['LOW']  = fuzz.trimf(ship_thrust.universe, [-450, -50, -10])  
         ship_thrust['MED']  = fuzz.trimf(ship_thrust.universe, [0, 0, 400])       
-        ship_thrust['HIGH'] = fuzz.trimf(ship_thrust.universe, [200, 1000, 1000])       
+        ship_thrust['HIGH'] = fuzz.trimf(ship_thrust.universe, [200, 1000, 1000])     
 
 
         t_rule1 = ctrl.Rule(distance['FAR'],  ship_thrust['HIGH'])  
@@ -124,6 +136,13 @@ class ProjController(KesslerController):
 
 
         self.motion_control = ctrl.ControlSystem([t_rule1, t_rule2, t_rule3])
+
+        avoid_rule1 = ctrl.Rule(ship_distance['DANGER'], ship_avoid_turn['LEFT'])
+        avoid_rule2 = ctrl.Rule(ship_distance['CAUTION'], ship_avoid_turn['NONE'])
+        avoid_rule3 = ctrl.Rule(ship_distance['CLEAR'], ship_avoid_turn['NONE'])
+
+        self.avoid_control = ctrl.ControlSystem([avoid_rule1, avoid_rule2, avoid_rule3])
+
 
         
         
@@ -185,6 +204,18 @@ class ProjController(KesslerController):
         intrcpt_x = closest_asteroid["aster"]["position"][0] + closest_asteroid["aster"]["velocity"][0] * (bullet_t+1/30)
         intrcpt_y = closest_asteroid["aster"]["position"][1] + closest_asteroid["aster"]["velocity"][1] * (bullet_t+1/30)
 
+
+        # --- Find closest other ship ---
+        closest_ship = None
+        for s in game_state["ships"]:
+            # Skip the ship we are controlling
+            if s is ship_state:
+                continue
+
+            d = math.dist(ship_state["position"], s["position"])
+            if closest_ship is None or d < closest_ship["dist"]:
+                closest_ship = dict(ship=s, dist=d)
+
         
         my_theta1 = math.atan2((intrcpt_y - ship_pos_y),(intrcpt_x - ship_pos_x))
         
@@ -205,14 +236,29 @@ class ProjController(KesslerController):
         shooting.compute()
         turn_rate = shooting.output['ship_turn']
         
-        turn_rate = turn_rate * 3
-        turn_rate = max(-180.0, min(180.0, turn_rate))
+
+        if closest_ship is not None:
+            avoid_sim = ctrl.ControlSystemSimulation(self.avoid_control, flush_after_run=1)
+            avoid_sim.input['ship_distance'] = closest_ship["dist"]
+            avoid_sim.compute()
+            avoid_turn = avoid_sim.output['ship_avoid_turn']
+        else:
+            avoid_turn = 0
+
+        attack_turn = shooting.output['ship_turn']
+
+        # Add collision repulsion
+        turn_rate = attack_turn * 2.5
+
+        # smooth & clamp
+        turn_rate = max(-180, min(180, turn_rate))
+
         
         # Get the defuzzified outputs
         # Get the defuzzified turn / fire outputs
         
 
-        if shooting.output['ship_fire'] >= 0:
+        if True:#shooting.output['ship_fire'] >= 0:
             fire = True
         else:
             fire = False
@@ -228,6 +274,7 @@ class ProjController(KesslerController):
 
         self.eval_frames += 1
 
+
    
         print(thrust, bullet_t, shooting_theta, turn_rate, fire)
 
@@ -236,4 +283,4 @@ class ProjController(KesslerController):
 
     @property
     def name(self) -> str:
-        return "ProjController"
+        return "ProjController 2.0"
