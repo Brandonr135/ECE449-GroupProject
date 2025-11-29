@@ -148,6 +148,19 @@ class ProjController(KesslerController):
                     closest_asteroid["aster"] = a
                     closest_asteroid["dist"] = curr_dist
         
+        # Compute angle of closest asteroid relative to ship heading
+        if closest_asteroid is not None:
+            dx_a = closest_asteroid["aster"]["position"][0] - ship_pos_x
+            dy_a = closest_asteroid["aster"]["position"][1] - ship_pos_y
+            angle_to_asteroid = math.atan2(dy_a, dx_a)
+
+            ship_heading_rad = math.radians(ship_state["heading"])
+            rel_angle_a = angle_to_asteroid - ship_heading_rad
+            # normalize to [-pi, pi]
+            rel_angle_a = (rel_angle_a + math.pi) % (2 * math.pi) - math.pi
+        else:
+            rel_angle_a = 0.0
+
         
         asteroid_ship_x = ship_pos_x - closest_asteroid["aster"]["position"][0]
         asteroid_ship_y = ship_pos_y - closest_asteroid["aster"]["position"][1]
@@ -223,15 +236,33 @@ class ProjController(KesslerController):
         move_sim.compute()
         thrust = move_sim.output['ship_thrust']
 
-       
+        # --- Mine planting logic ---
         drop_mine = False
+
+        # Only consider dropping mines every few frames to avoid spam
+        # and only if we actually have a nearby asteroid
+        if closest_asteroid is not None:
+            dist_a = closest_asteroid["dist"]
+
+            # Conditions:
+            #  - asteroid is "behind" us: |rel_angle_a| > 120 degrees
+            #  - asteroid is relatively close: < 400 units
+            #  - we're moving forward (thrust positive) so we leave the mine behind us
+            #  - only every 15 frames (tune this as you like)
+            if (
+                dist_a < 150
+                and abs(rel_angle_a) > math.radians(0)
+                and (thrust > 450 or thrust < -450) 
+                and self.eval_frames % 3 == 0
+            ):
+                drop_mine = True
 
         self.eval_frames += 1
 
-   
-        print(thrust, bullet_t, shooting_theta, turn_rate, fire)
+        print(thrust, bullet_t, shooting_theta, turn_rate, fire, drop_mine)
 
         return thrust, turn_rate, fire, drop_mine
+
 
 
     @property

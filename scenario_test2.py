@@ -11,10 +11,10 @@ my_test_scenario = Scenario(
     num_asteroids=5,
     ship_states=[
         # Simple test controller (Team 1)
-        {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1},
+        {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1, 'mines_remaining': 10},
 
         # Scott Dick controller (Team 2)
-        {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2},
+        {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2, 'mines_remaining': 10},
     ],
     map_size=(1000, 800),
     time_limit=60,
