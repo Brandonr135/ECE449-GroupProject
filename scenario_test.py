@@ -4,6 +4,7 @@ from test_controller import TestController
 from scott_dick_controller import ScottDickController
 from projcontroller import ProjController      # <-- your project controller
 from graphics_both import GraphicsBoth
+from GA_group6_controller import GACompController
 
 # --- Define Scenario ---
 my_test_scenario = Scenario(
@@ -18,7 +19,7 @@ my_test_scenario = Scenario(
 
         # Your project controller (Team 3)
         # You can tweak starting position / angle as you like
-        {'position': (500, 200), 'angle': 90, 'lives': 3, 'team': 3},
+        # {'position': (500, 200), 'angle': 90, 'lives': 3, 'team': 3},
     ],
     map_size=(1000, 800),
     time_limit=60,
@@ -46,9 +47,9 @@ pre = time.perf_counter()
 score, perf_data = game.run(
     scenario=my_test_scenario,
     controllers=[
-        TestController(),          # Team 1
-        ScottDickController(),     # Team 2
-        ProjController()           # Us
+        ScottDickController(),
+        GACompController(),          # Team 1
+        # ProjController()           # Us
     ]
 )
 
@@ -59,4 +60,4 @@ print("Asteroids hit:", [team.asteroids_hit for team in score.teams])
 print("Deaths:", [team.deaths for team in score.teams])
 print("Accuracy:", [team.accuracy for team in score.teams])
 print("Mean eval time:", [team.mean_eval_time for team in score.teams])
-print("Evaluated frames:", [controller.eval_frames for controller in score.final_controllers])
+# print("Evaluated frames:", [controller.eval_frames for controller in score.final_controllers])
