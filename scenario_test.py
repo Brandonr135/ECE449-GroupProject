@@ -9,7 +9,7 @@ from GA_group6_controller import GACompController
 # --- Define Scenario ---
 my_test_scenario = Scenario(
     name='Test Scenario',
-    num_asteroids=5,
+    num_asteroids=16,
     ship_states=[
         # Simple test controller (Team 1)
         {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1},
@@ -19,7 +19,7 @@ my_test_scenario = Scenario(
 
         # Your project controller (Team 3)
         # You can tweak starting position / angle as you like
-        # {'position': (500, 200), 'angle': 90, 'lives': 3, 'team': 3},
+        #{'position': (500, 200), 'angle': 90, 'lives': 3, 'team': 3},
     ],
     map_size=(1000, 800),
     time_limit=60,
@@ -49,7 +49,7 @@ score, perf_data = game.run(
     controllers=[
         ScottDickController(),
         GACompController(),          # Team 1
-        # ProjController()           # Us
+        #ProjController()           # Us
     ]
 )
 

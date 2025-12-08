@@ -6,6 +6,9 @@ from kesslergame import KesslerController, Scenario, KesslerGame, GraphicsType, 
 import random
 import EasyGA
 
+#Our code uses to function to run GA. To rerun the GA, simply change run_GA to True, and a new best_chromosome will be found.
+run_GA = False
+
 def gene_generation():
     return sorted([random.random(), random.random(), random.random()])
 
@@ -221,5 +224,10 @@ class GACompController(KesslerController):
         return "GAProjController"
 
 print("Running Genetic Algorithm to find best chromosome...")
-best_chromosome = run_ga(6, 3)
+
+if run_GA:
+    best_chromosome = run_ga(6, 3)
+else:
+    best_chromosome = [[0.006235545286981448, 0.2694790171799788, 0.40899082366816064], [0.0031061974781771973, 0.1412197337211607, 0.9603497921879489], [0.08359518852579406, 0.21191703216981628, 0.7117541988238603]]
+
 print("Finished GA. Best chromosome:", best_chromosome)
