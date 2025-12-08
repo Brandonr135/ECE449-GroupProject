@@ -55,7 +55,6 @@ class GACompController(KesslerController):
         if chromosome is None:
             chromosome = best_chromosome
 
-        # Normalize EasyGA chromosome → list of lists
         if hasattr(chromosome, "gene_list"):
             chromosome = [g.value for g in chromosome.gene_list]
         elif hasattr(chromosome[0], "value"):
@@ -72,20 +71,11 @@ class GACompController(KesslerController):
         ship_thrust = ctrl.Consequent(np.arange(-1000, 1000, 10), 'ship_thrust')
 
         bt1, bt2, bt3 = chromosome[0]
-        td1, td2, td3 = chromosome[1]
         d1, d2, d3 = chromosome[2]
         bullet_time['S'] = fuzz.trimf(bullet_time.universe, [0, 0, bt1])
         bullet_time['M'] = fuzz.trimf(bullet_time.universe, [bt1, bt2, bt3])
         bullet_time['L'] = fuzz.smf(bullet_time.universe, bt2, 1.0)
 
-        td1, td2, td3 = chromosome[1]
-        td_min, td_max = -math.pi/30, math.pi/30
-        a = td_min + td1 * (td_max - td_min)
-        b = td_min + td2 * (td_max - td_min)
-        c = td_min + td3 * (td_max - td_min)
-        a, b, c = sorted([a, b, c])
-        mid1 = (a + b) / 2
-        mid2 = (b + c) / 2
         theta_delta['NL'] = fuzz.zmf(theta_delta.universe, -1*math.pi/30, -2*math.pi/90)
         theta_delta['NM'] = fuzz.trimf(theta_delta.universe, [-1*math.pi/30, -2*math.pi/90, -1*math.pi/90])
         theta_delta['NS'] = fuzz.trimf(theta_delta.universe, [-2*math.pi/90, -1*math.pi/90, math.pi/90])
